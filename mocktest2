@@ -1,0 +1,49 @@
+Mock Test 2 - Big Data - PPT - iNeuron
+
+1. Write an SQL query to find the second-highest salary from an "Employees" table.
+Answer -- 
+SELECT MAX(salary) AS second_highest_salary
+FROM Employees
+WHERE salary < (SELECT MAX(salary) FROM Employees);
+
+
+2. Write a MapReduce program to calculate the word count of a given input text file.
+Answer -- 
+from mrjob.job import MRJob
+import re
+
+WORD_RE = re.compile(r"\w+")
+
+class WordCount(MRJob):
+  
+  def mapper(self, _, line):
+    for word in WORD_RE.findall(line):
+      yield word.lower(), 1
+  
+  def reducer(self, word, counts):
+    yield word, sum(counts)
+  
+if __name__ == '__main__':
+  WordCount.run()
+
+
+
+3. Write a Spark program to count the number of occurrences of each word in a given text file.
+Answer -- 
+from pyspark.sql import SparkSession
+
+# Create a Spark session
+spark = SparkSession.builder.appName("WordCount").getOrCreate()
+
+# Read the text file and split it into words
+lines = spark.read.text("input.txt").rdd.flatMap(lambda line: line.value.split(" "))
+
+# Count the occurrences of each word
+word_counts = lines.map(lambda word: (word, 1)).reduceByKey(lambda x, y: x + y)
+
+# Print the word counts
+for word, count in word_counts.collect():
+    print(f"{word}: {count}")
+
+# Stop the Spark session
+spark.stop()
